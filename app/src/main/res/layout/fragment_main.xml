@@ -10,41 +10,82 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:weightSum="2">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:weightSum="2"
+        android:background="@drawable/border">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="Original"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1">
 
-        <FrameLayout
+            <Button
+                android:id="@+id/draw_top_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Draw"/>
+
+            <TextView
+                android:id="@+id/top_hash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <ImageView
             android:id="@+id/top_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:weightSum="2"
+        android:background="@drawable/border">
 
-        <Button
-            android:id="@+id/draw_button"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Draw"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-        <FrameLayout
+            <Button
+                android:id="@+id/draw_bottom_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:text="Draw"/>
+
+            <TextView
+                android:id="@+id/distance_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true" />
+
+            <TextView
+                android:id="@+id/bottom_hash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/draw_bottom_button"
+                android:layout_above="@id/distance_view"/>
+
+        </RelativeLayout>
+
+        <ImageView
             android:id="@+id/bottom_frame"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/draw_button"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>
