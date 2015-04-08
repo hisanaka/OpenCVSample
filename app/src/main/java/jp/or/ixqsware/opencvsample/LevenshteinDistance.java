@@ -1,7 +1,7 @@
 package jp.or.ixqsware.opencvsample;
 
 /**
- * Created by hnakadate on 15/04/07.
+ *レーベンシュタイン距離による文字列比較
  */
 public class LevenshteinDistance {
 
@@ -9,7 +9,7 @@ public class LevenshteinDistance {
         super();
     }
 
-    public int getDistance(String str1, String str2) {
+    public int calculateDistance(String str1, String str2) {
         int len1 = str1.length();
         int len2 = str2.length();
 

@@ -5,8 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
+import jp.or.ixqsware.opencvsample.fragment.MainFragment;
 
 public class MainActivity extends Activity {
 
@@ -14,9 +13,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MainFragment fragment = MainFragment.newInstance(0);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new MainFragment())
+                    .add(R.id.container, fragment)
                     .commit();
         }
     }
