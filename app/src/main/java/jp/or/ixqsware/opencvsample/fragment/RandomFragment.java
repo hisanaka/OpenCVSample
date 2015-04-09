@@ -21,17 +21,19 @@ import jp.or.ixqsware.opencvsample.ImageGen;
 import jp.or.ixqsware.opencvsample.LevenshteinDistance;
 import jp.or.ixqsware.opencvsample.R;
 
-import static jp.or.ixqsware.opencvsample.Constants.*;
+import static jp.or.ixqsware.opencvsample.Constants.ARG_SECTION_NUMBER;
+import static jp.or.ixqsware.opencvsample.Constants.REQUEST_BOTTOM;
+import static jp.or.ixqsware.opencvsample.Constants.REQUEST_TOP;
 
-public class MainFragment extends Fragment implements View.OnClickListener {
+public class RandomFragment extends Fragment implements View.OnClickListener {
     private ImageView topImage;
     private ImageView bottomImage;
     private TextView topHashView;
     private TextView bottomHashView;
     private TextView distanceView;
 
-    public static MainFragment newInstance(int sectionNumber) {
-        MainFragment fragment = new MainFragment();
+    public static RandomFragment newInstance(int sectionNumber) {
+        RandomFragment fragment = new RandomFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         fragment.setArguments(args);
@@ -63,53 +65,25 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         int id = v.getId();
         switch (id) {
             case R.id.top_button:
-                loadImage(REQUEST_TOP);
+                ImageGen topImageGen = new ImageGen();
+                topImage.setImageBitmap(topImageGen.getOriginalBitmap());
+                topHashView.setText(topImageGen.getHash());
                 break;
 
             case R.id.bottomo_button:
-                loadImage(REQUEST_BOTTOM);
+                ImageGen bottomImageGen = new ImageGen();
+                bottomImage.setImageBitmap(bottomImageGen.getOriginalBitmap());
+                String mHash = bottomImageGen.getHash();
+                bottomHashView.setText(mHash);
+                if (topHashView.getText().length() > 0) {
+                    int distance = (new LevenshteinDistance()).calculateDistance(
+                            topHashView.getText().toString(),
+                            mHash
+                    );
+                    double ratio = (double) distance * 100 / (double) mHash.length();
+                    distanceView.setText(getString(R.string.distance_label, distance, ratio));
+                }
                 break;
         }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK) { return; }
-        try {
-            InputStream is = getActivity().getContentResolver().openInputStream(data.getData());
-            Bitmap img = BitmapFactory.decodeStream(is);
-            is.close();
-            ImageGen imageGen = new ImageGen(img);
-            switch (requestCode) {
-                case REQUEST_TOP:
-                    topImage.setImageBitmap(imageGen.getOriginalBitmap());
-                    topHashView.setText(imageGen.getHash());
-                    break;
-
-                case REQUEST_BOTTOM:
-                    bottomImage.setImageBitmap(imageGen.getOriginalBitmap());
-                    bottomHashView.setText(imageGen.getHash());
-                    break;
-            }
-            if (topHashView.getText().length() > 0 && bottomHashView.getText().length() > 0) {
-                int distance = (new LevenshteinDistance()).calculateDistance(
-                        topHashView.getText().toString(),
-                        bottomHashView.getText().toString()
-                );
-                double ratio = (double) distance * 100 / (double) bottomHashView.getText().length();
-                distanceView.setText(getString(R.string.distance_label, distance, ratio));
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadImage(int requestCode) {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, requestCode);
     }
 }

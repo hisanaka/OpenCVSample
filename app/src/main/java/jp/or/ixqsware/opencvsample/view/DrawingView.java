@@ -8,28 +8,36 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.util.AttributeSet;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.util.ArrayList;
+
+import jp.or.ixqsware.opencvsample.R;
+
 /**
  * 手書きビュー
  */
 public class DrawingView extends View {
-    private Context context;
     private Canvas mCanvas;
-    private Paint mPaint = new Paint(Paint.DITHER_FLAG);
-    private Path mPath;
-    private float mX;
-    private float mY;
     private Bitmap bmp;
-    private final int TOUCH_TOLERANCE = 4;
+    private boolean flgNew = true;
+    private Paint mPaint = new Paint(Paint.DITHER_FLAG);
+    private ArrayList<Point> arrPoints = new ArrayList<>();
 
     public DrawingView(Context context) {
-        super(context);
-        this.context = context;
-        mPath = new Path();
+        super(context, null);
+    }
+
+    public DrawingView(Context context, AttributeSet attrs) {
+        super(context, attrs, 0);
+    }
+
+    public DrawingView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
         setFocusable(true);
         setFocusableInTouchMode(true);
     }
@@ -52,76 +60,60 @@ public class DrawingView extends View {
         }
         canvas.drawColor(Color.TRANSPARENT);
         canvas.drawBitmap(bmp, 0, 0, mPaint);
-        if (mPaint.getColor() != Color.TRANSPARENT) canvas.drawPath(mPath, mPaint);
+
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setFilterBitmap(true);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStrokeJoin(Paint.Join.ROUND);
+        mPaint.setStrokeWidth(15);
+        mPaint.setColor(getResources().getColor(R.color.paint_color));
+
+        Point nP = new Point(-1, -1);
+        for (Point mP : arrPoints) {
+            if (mP.x >= 0) {
+                if (nP.x < 0) { nP = mP; }
+                canvas.drawLine(nP.x, nP.y, mP.x, mP.y, mPaint);
+            }
+            nP = mP;
+        }
     }
 
     @Override
     protected void onMeasure(int width, int height) {
         super.onMeasure(width, height);
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         setMeasuredDimension(size.x, size.y);
     }
 
-    private void touch_start(float x, float y) {
-        mPath.reset();
-        mPath.moveTo(x, y);
-        mX = x;
-        mY = y;
-    }
-
-    private void touch_move(float x, float y) {
-        float dx = Math.abs(x - mX);
-        float dy = Math.abs(y - mY);
-        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-            mX = x;
-            mY = y;
-        }
-    }
-
-    private void touch_up() {
-        mPath.lineTo(mX, mY);
-        mCanvas.drawPath(mPath, mPaint);
-        mPath.reset();
-    }
-
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                touch_start(x, y);
-                invalidate();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                touch_move(x, y);
-                if (mPaint.getColor() == Color.TRANSPARENT) {
-                    mCanvas.drawPath(mPath, mPaint);
-                }
-                invalidate();
-                break;
-
-            case MotionEvent.ACTION_UP:
-                if (mPaint.getColor() != Color.TRANSPARENT) {
-                    touch_up();
-                } else {
-                    touch_move(x, y);
-                    mCanvas.drawPath(mPath, mPaint);
-                    invalidate();
-                    touch_up();
-                }
-                invalidate();
-                break;
+        int action = event.getAction();
+        if (action == MotionEvent.ACTION_DOWN && flgNew) {
+            clearCanvas();
         }
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+        arrPoints.add(new Point(x, y));
+
+        if (action == MotionEvent.ACTION_UP) {
+            arrPoints.add(new Point(-1, -1));
+            flgNew = true;
+        }
+        invalidate();
         return true;
     }
 
     public void clearCanvas() {
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        arrPoints.clear();
         this.invalidate();
+    }
+
+    public ArrayList<Point> getPoints() {
+        return this.arrPoints;
     }
 }

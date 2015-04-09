@@ -13,6 +13,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static jp.or.ixqsware.opencvsample.Constants.*;
@@ -48,8 +49,11 @@ public class ImageGen {
                         mat,
                         points.get(i - 1),
                         points.get(i),
-                        new Scalar(255, 255, 255),
-                        10,
+                        new Scalar(
+                                (20 * i + 255 * (randNum - i)) / randNum,
+                                (20 * i + 255 * (randNum - i)) / randNum,
+                                (20 * i + 255 * (randNum - i)) / randNum),
+                        5,
                         Core.LINE_AA
                 );
             }
@@ -71,6 +75,36 @@ public class ImageGen {
         Utils.bitmapToMat(src.copy(Bitmap.Config.ARGB_8888, true), mat);
         this.originBmp = matToBitmap(mat);
 
+        mat = resizeMat(mat);
+        this.hash = calculateHash(mat);
+        this.bmp = matToBitmap(mat);
+    }
+
+    public ImageGen(ArrayList<android.graphics.Point> arrPoints, int width, int height) {
+        Mat mat = Mat.zeros(new Size(width, height), CvType.CV_8UC3);
+        ArrayList<Point> points = new ArrayList<>();
+        int arraySize = arrPoints.size();
+        for (int i = 0; i < arrPoints.size(); i++) {
+            android.graphics.Point p = arrPoints.get(i);
+            if (p.x < 0 || p.y < 0) { continue; }
+            points.add(new Point(p.x, p.y));
+            if (i > 0) {
+                Core.line(
+                        mat,
+                        points.get(i - 1),
+                        points.get(i),
+                        new Scalar(
+                                (20 * i + 255 * (arraySize - i)) / arraySize,
+                                (20 * i + 255 * (arraySize - i)) / arraySize,
+                                (20 * i + 255 * (arraySize - i)) / arraySize),
+                        5,
+                        Core.LINE_AA
+                );
+            }
+        }
+        this.originBmp = matToBitmap(mat);
+
+        mat = trimImage(mat, points);
         mat = resizeMat(mat);
         this.hash = calculateHash(mat);
         this.bmp = matToBitmap(mat);
@@ -131,7 +165,7 @@ public class ImageGen {
     /**
      * Mat -> Bitmap変換
      * @param src 元画像(Mat)
-     * @return Bitmap返還後の画像
+     * @return Bitma変換後の画像
      */
     private Bitmap matToBitmap(Mat src) {
         Mat dst = new Mat();

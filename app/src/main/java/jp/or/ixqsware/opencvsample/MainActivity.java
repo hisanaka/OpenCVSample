@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import jp.or.ixqsware.opencvsample.fragment.DrawingFragment;
 import jp.or.ixqsware.opencvsample.fragment.MainFragment;
+import jp.or.ixqsware.opencvsample.fragment.RandomFragment;
 
 public class MainActivity extends Activity {
 
@@ -13,7 +15,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainFragment fragment = MainFragment.newInstance(0);
+        //MainFragment fragment = MainFragment.newInstance(0);
+        //RandomFragment fragment = RandomFragment.newInstance(1);
+        DrawingFragment fragment = DrawingFragment.newInstance(2);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
