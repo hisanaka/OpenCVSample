@@ -19,9 +19,11 @@ import java.io.InputStream;
 
 import jp.or.ixqsware.opencvsample.ImageGen;
 import jp.or.ixqsware.opencvsample.LevenshteinDistance;
+import jp.or.ixqsware.opencvsample.MainActivity;
 import jp.or.ixqsware.opencvsample.R;
 
 import static jp.or.ixqsware.opencvsample.Constants.ARG_SECTION_NUMBER;
+import static jp.or.ixqsware.opencvsample.Constants.RANDOM_SECTION_ID;
 import static jp.or.ixqsware.opencvsample.Constants.REQUEST_BOTTOM;
 import static jp.or.ixqsware.opencvsample.Constants.REQUEST_TOP;
 
@@ -38,6 +40,13 @@ public class RandomFragment extends Fragment implements View.OnClickListener {
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER, RANDOM_SECTION_ID));
     }
 
     @Override

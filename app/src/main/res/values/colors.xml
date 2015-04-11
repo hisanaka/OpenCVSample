@@ -2,4 +2,9 @@
 <resources>
     <color name="border">#bbbbbb</color>
     <color name="paint_color">#000000</color>
+    <color name="navigation_list">#aaffffff</color>
+
+    <color name="translucent">#00000000</color>
+    <color name="select_item">#ff449ae4</color>
+
 </resources>

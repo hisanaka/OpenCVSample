@@ -1,12 +1,12 @@
 package jp.or.ixqsware.opencvsample.fragment;
 
-import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,14 +23,13 @@ import java.util.ArrayList;
 
 import jp.or.ixqsware.opencvsample.ImageGen;
 import jp.or.ixqsware.opencvsample.LevenshteinDistance;
+import jp.or.ixqsware.opencvsample.MainActivity;
 import jp.or.ixqsware.opencvsample.R;
 import jp.or.ixqsware.opencvsample.view.DrawingView;
 
 import static jp.or.ixqsware.opencvsample.Constants.ARG_SECTION_NUMBER;
+import static jp.or.ixqsware.opencvsample.Constants.DRAWING_SECTION_ID;
 
-/**
- * Created by hnakadate on 15/04/09.
- */
 public class DrawingFragment extends Fragment implements View.OnClickListener {
     private FrameLayout topFrame;
     private FrameLayout bottomFrame;
@@ -42,6 +41,13 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER, DRAWING_SECTION_ID));
     }
 
     @Override
@@ -90,15 +96,16 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
 
                 ImageGen topGen = new ImageGen(arrTop, topFrame.getWidth(), topFrame.getHeight());
                 ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomDraw.getWidth());
+
                 String topHash = topGen.getHash();
                 String bottomHash = bottomGen.getHash();
 
                 /*
-                Bitmap bmpTop = topGen.getOriginalBitmap();
+                Bitmap bmpTop = topGen.getBitmap();
                 saveImage(bmpTop, "top");
-                Bitmap bmpBottom = bottomGen.getOriginalBitmap();
+                Bitmap bmpBottom = bottomGen.getBitmap();
                 saveImage(bmpBottom, "bottom");
-                 */
+                */
 
                 LevenshteinDistance lDistance = new LevenshteinDistance();
                 int distance = lDistance.calculateDistance(topHash, bottomHash);
@@ -114,7 +121,8 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
         File saveDir = new File(savePath);
         if (!saveDir.exists()) { saveDir.mkdir(); }
 
-        String saveName = savePath + fileName + ".png";
+        String mDate = DateFormat.format("yyyyMMdd_kkmmss", System.currentTimeMillis()).toString();
+        String saveName = savePath + fileName + "_" + mDate + ".png";
         try {
             FileOutputStream fos = new FileOutputStream(saveName);
             bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);

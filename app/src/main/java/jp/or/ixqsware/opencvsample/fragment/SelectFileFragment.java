@@ -19,23 +19,31 @@ import java.io.InputStream;
 
 import jp.or.ixqsware.opencvsample.ImageGen;
 import jp.or.ixqsware.opencvsample.LevenshteinDistance;
+import jp.or.ixqsware.opencvsample.MainActivity;
 import jp.or.ixqsware.opencvsample.R;
 
 import static jp.or.ixqsware.opencvsample.Constants.*;
 
-public class MainFragment extends Fragment implements View.OnClickListener {
+public class SelectFileFragment extends Fragment implements View.OnClickListener {
     private ImageView topImage;
     private ImageView bottomImage;
     private TextView topHashView;
     private TextView bottomHashView;
     private TextView distanceView;
 
-    public static MainFragment newInstance(int sectionNumber) {
-        MainFragment fragment = new MainFragment();
+    public static SelectFileFragment newInstance(int sectionNumber) {
+        SelectFileFragment fragment = new SelectFileFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER, SELECT_FILE_SECTION_ID));
     }
 
     @Override
