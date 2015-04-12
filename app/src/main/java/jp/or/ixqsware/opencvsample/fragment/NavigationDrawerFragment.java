@@ -87,7 +87,8 @@ public class NavigationDrawerFragment extends Fragment {
         String[] lstTitles = new String[]{
                 getString(R.string.random_fragment_name),
                 getString(R.string.select_file_fragment_name),
-                getString(R.string.drawing_fragment_name)
+                getString(R.string.drawing_fragment_name),
+                getString(R.string.feature_point_fragment_name)
         };
 
         for (int i = 0; i < lstTitles.length; i++) {

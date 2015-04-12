@@ -8,6 +8,7 @@
     <string name="random_fragment_name">Random</string>
     <string name="select_file_fragment_name">File Select</string>
     <string name="drawing_fragment_name">Drawing</string>
+    <string name="feature_point_fragment_name">FeaturePoint</string>
 
     <string name="distance_label">Distance: %1$d (%2$f %%)</string>
 </resources>

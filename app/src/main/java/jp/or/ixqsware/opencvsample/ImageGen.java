@@ -27,13 +27,51 @@ import java.util.ArrayList;
 import static jp.or.ixqsware.opencvsample.Constants.*;
 
 public class ImageGen {
-    private Bitmap bmp;
-    private Bitmap originBmp;
-    private String hash;
-    private Mat matFeature;
+    private Bitmap bmp = null;
+    private Bitmap originBmp = null;
+    private String hash = "";
+    private Mat matFeature = null;
 
     static{
         System.loadLibrary("opencv_java");
+    }
+
+    /**
+     * TODO コンストラクタ(特徴点利用/作成中)
+     * @param arrPoints
+     * @param width
+     * @param height
+     * @param dummy
+     */
+    public ImageGen(ArrayList<android.graphics.Point> arrPoints, int width, int height, int dummy) {
+        Mat mat = Mat.zeros(new Size(width, height), CvType.CV_8UC3);
+        ArrayList<Point> points = new ArrayList<>();
+        int arraySize = arrPoints.size();
+        for (int i = 0; i < arrPoints.size(); i++) {
+            android.graphics.Point p = arrPoints.get(i);
+            if (p.x < 0 || p.y < 0) { continue; }
+            points.add(new Point(p.x, p.y));
+            if (i > 0) {
+                Core.line(
+                        mat,
+                        points.get(i - 1),
+                        points.get(i),
+                        new Scalar(
+                                (25 * i + 255 * (arraySize - i)) / arraySize,
+                                0,
+                                (255 * i + 25 * (arraySize - i)) / arraySize),
+                        10
+                );
+            }
+        }
+        mat = trimImage(mat, points);
+        this.matFeature = getFeaturePoint(mat);
+        this.originBmp = matToBitmap(this.matFeature);
+
+        mat = resizeImage(mat, 32, 32);
+        Mat brightness = getBrightnessGraph(mat);
+        this.bmp = matToBitmap(brightness);
+        this.hash = calculateHash(resizeImage(brightness, IMG_WIDTH, IMG_HEIGHT));
     }
 
     /**
@@ -58,9 +96,9 @@ public class ImageGen {
                         points.get(i - 1),
                         points.get(i),
                         new Scalar(
-                                (130 * i + 255 * (randNum - i)) / randNum,
+                                (25 * i + 255 * (randNum - i)) / randNum,
                                 0,
-                                (255 * i + 130 * (randNum - i)) / randNum),
+                                (255 * i + 25 * (randNum - i)) / randNum),
                         5
                 );
             }
@@ -86,14 +124,6 @@ public class ImageGen {
         Mat brightness = getBrightnessGraph(mat);
         this.bmp = matToBitmap(brightness);
         this.hash = calculateHash(resizeImage(brightness, IMG_WIDTH, IMG_HEIGHT));
-
-        /*
-        this.matFeature = getFeaturePoint(mat);
-
-        mat = resizeImage(mat, IMG_WIDTH, IMG_HEIGHT);
-        this.hash = calculateHash(mat);
-        this.bmp = matToBitmap(mat);
-        */
     }
 
     /**
@@ -123,25 +153,17 @@ public class ImageGen {
                 );
             }
         }
-        // TODO
         mat = trimImage(mat, points);
-        this.originBmp = matToBitmap(convertGrayScale(mat));
+        mat = convertGrayScale(mat);
+        this.originBmp = matToBitmap(mat);
 
-        mat = resizeImage(mat, IMG_WIDTH, IMG_HEIGHT);
+        // TODO 明度のグラフを作成する前に縮小したほうが良い?
+        mat = resizeImage(mat, 32, 32);
         Mat brightness = getBrightnessGraph(mat);
         this.bmp = matToBitmap(brightness);
-        this.hash = calculateHash(resizeImage(brightness, IMG_WIDTH, IMG_HEIGHT));
-        /*
-        mat = resizeImage(mat, IMG_WIDTH, IMG_HEIGHT);
 
-        Mat tmp = new Mat();
-        mat.copyTo(tmp);
-        tmp = convertGrayScale(tmp);
-        this.matFeature = getFeaturePoint(tmp);
-
-        this.hash = calculateHash(mat);
-        this.bmp = matToBitmap(mat);
-         */
+        brightness = resizeImage(brightness, IMG_WIDTH, IMG_HEIGHT);
+        this.hash = calculateHash(brightness);
     }
 
     /**
@@ -151,15 +173,23 @@ public class ImageGen {
      */
     private Mat getFeaturePoint(final Mat src) {
         Mat tmp = new Mat();
-        Imgproc.cvtColor(src, tmp, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(src, tmp, Imgproc.COLOR_RGBA2GRAY);
 
-        Mat dst = new Mat();
         MatOfKeyPoint keyPoint = new MatOfKeyPoint();
         FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
         detector.detect(tmp, keyPoint);
+
+        Mat dst = new Mat();
         DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
         extractor.compute(tmp, keyPoint, dst);
-        Log.d("DEBUG:", "Dst:" + dst.empty());
+
+        /* 特徴点を画像上に描画
+        Mat ret = new Mat();
+        Imgproc.cvtColor(tmp, ret, Imgproc.COLOR_GRAY2RGB, 4);
+        Features2d.drawKeypoints(tmp, keyPoint, ret, new Scalar(255, 0, 0), Features2d.DRAW_RICH_KEYPOINTS);
+        Imgproc.cvtColor(ret, tmp, Imgproc.COLOR_RGB2RGBA);
+         */
+
         return dst;
     }
 
@@ -169,16 +199,15 @@ public class ImageGen {
      * @param mat2
      * @return
      */
-    public double comapreImage(Mat mat1, Mat mat2) {
+    public double compareImage(Mat mat1, Mat mat2) {
         DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
         MatOfDMatch matOfDMatch = new MatOfDMatch();
         matcher.match(mat1, mat2, matOfDMatch);
         DMatch[] dMatches = matOfDMatch.toArray();
-        Log.d("DEBUG:", "DMatch:" + dMatches.length);
         int cnt = 0;
         for (int i = 0; i < dMatches.length; i++) {
             if (dMatches[i].distance < 50) {
-                cnt++;
+                cnt++;  // ここをどうするか・・・
             }
         }
         return (double) cnt * 100 / dMatches.length;
@@ -205,14 +234,16 @@ public class ImageGen {
      * @return 縦軸に明度、横軸にピクセルをとったグラフ
      */
     private Mat getBrightnessGraph(final Mat src) {
-        Mat grayScale = convertGrayScale(src);
-        Mat dst = new Mat(new Size(src.rows() * src.cols(), 256), CvType.CV_8UC3);
-        for (int r = 0; r < grayScale.rows(); r++) {
-            for (int c = 0; c < grayScale.cols(); c++) {
+        Mat tmp = new Mat();
+        Imgproc.cvtColor(src, tmp, Imgproc.COLOR_RGB2HSV);
+
+        Mat dst = new Mat(new Size(tmp.rows() * tmp.cols(), 256), CvType.CV_8UC3);
+        for (int r = 0; r < tmp.rows(); r++) {
+            for (int c = 0; c < tmp.cols(); c++) {
                 Core.line(
                         dst,
-                        new Point((r * 16) + c, 0),
-                        new Point((r * 16) + c, grayScale.get(r, c)[2]),
+                        new Point((r * tmp.cols()) + c, 0),
+                        new Point((r * tmp.cols()) + c, tmp.get(r, c)[2]),
                         new Scalar(255, 255, 255),
                         1
                 );
@@ -254,14 +285,15 @@ public class ImageGen {
      */
     private String calculateHash(final Mat src) {
         String mHash = "";
+
         Mat dst = new Mat();
         src.copyTo(dst);
         Imgproc.cvtColor(dst, dst, Imgproc.COLOR_RGB2HSV);
-        double[] buff = new double[IMG_WIDTH * IMG_HEIGHT];
+        double[] buff = new double[dst.rows() * dst.cols()];
         double sum = 0;
         for (int r = 0; r < src.rows(); r++) {
             for (int c = 0; c < src.cols(); c++) {
-                buff[r * IMG_HEIGHT + c] = src.get(r, c)[2];
+                buff[r * dst.cols() + c] = src.get(r, c)[2];
                 sum += src.get(r, c)[2];
             }
         }
@@ -278,7 +310,7 @@ public class ImageGen {
     /**
      * Mat -> Bitmap変換
      * @param src 元画像(Mat)
-     * @return Bitma変換後の画像
+     * @return Bitmap変換後の画像
      */
     private Bitmap matToBitmap(final Mat src) {
         Mat dst = new Mat();

@@ -84,6 +84,7 @@ public class RandomFragment extends Fragment implements View.OnClickListener {
                 bottomImage.setImageBitmap(bottomImageGen.getOriginalBitmap());
                 String mHash = bottomImageGen.getHash();
                 bottomHashView.setText(mHash);
+                distanceView.setText("");
                 if (topHashView.getText().length() > 0) {
                     int distance = (new LevenshteinDistance()).calculateDistance(
                             topHashView.getText().toString(),

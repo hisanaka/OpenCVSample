@@ -28,7 +28,7 @@
                 android:id="@+id/top_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Draw" />
+                android:text="Select" />
 
             <TextView
                 android:id="@+id/top_hash_view"
@@ -63,7 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:text="Draw"/>
+                android:text="Select"/>
 
             <TextView
                 android:id="@+id/distance_view"

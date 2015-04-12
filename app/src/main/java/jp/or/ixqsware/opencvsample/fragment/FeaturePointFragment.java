@@ -2,23 +2,23 @@ package jp.or.ixqsware.opencvsample.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Environment;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import jp.or.ixqsware.opencvsample.ImageGen;
@@ -27,16 +27,18 @@ import jp.or.ixqsware.opencvsample.MainActivity;
 import jp.or.ixqsware.opencvsample.R;
 import jp.or.ixqsware.opencvsample.view.DrawingView;
 
-import static jp.or.ixqsware.opencvsample.Constants.ARG_SECTION_NUMBER;
-import static jp.or.ixqsware.opencvsample.Constants.DRAWING_SECTION_ID;
+import static jp.or.ixqsware.opencvsample.Constants.*;
 
-public class DrawingFragment extends Fragment implements View.OnClickListener {
+/**
+ * Created by hnakadate on 15/04/12.
+ */
+public class FeaturePointFragment extends Fragment implements OnClickListener {
     private FrameLayout topFrame;
     private FrameLayout bottomFrame;
     private TextView distanceView;
 
-    public static DrawingFragment newInstance(int sectionNumber) {
-        DrawingFragment fragment = new DrawingFragment();
+    public static FeaturePointFragment newInstance(int sectionNumber) {
+        FeaturePointFragment fragment = new FeaturePointFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
         fragment.setArguments(args);
@@ -47,7 +49,7 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER, DRAWING_SECTION_ID));
+                getArguments().getInt(ARG_SECTION_NUMBER, FEATURE_POINT_SECTION_ID));
     }
 
     @Override
@@ -76,6 +78,7 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
         return rootView;
     }
 
+
     @Override
     public void onClick(View view) {
         int id = view.getId();
@@ -92,47 +95,16 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
             case R.id.calculate_button:
                 ArrayList<Point> arrTop = topDraw.getPoints();
                 ArrayList<Point> arrBottom = bottomDraw.getPoints();
-                if (arrTop.size() == 0 || arrBottom.size() == 0) { return; }
+                if (arrTop.size() == 0 || arrBottom.size() == 0) {
+                    return;
+                }
 
-                ImageGen topGen = new ImageGen(arrTop, topFrame.getWidth(), topFrame.getHeight());
-                ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomDraw.getWidth());
+                ImageGen topGen = new ImageGen(arrTop, topFrame.getWidth(), topFrame.getHeight(), 0);
+                ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomDraw.getWidth(), 0);
 
-                String topHash = topGen.getHash();
-                String bottomHash = bottomGen.getHash();
-
-                /* TODO 明度グラフ保存(確認用)
-                Bitmap topBrightness = topGen.getBitmap();
-                saveImage(topBrightness, "top_brightness");
-                Bitmap bottomBrightness = bottomGen.getBitmap();
-                saveImage(bottomBrightness, "bottom_brightness");
-                */
-
-                distanceView.setText("");
-                LevenshteinDistance lDistance = new LevenshteinDistance();
-                int distance = lDistance.calculateDistance(topHash, bottomHash);
-                double ratio = (double) distance * 100 / (double) topHash.length();
-                distanceView.setText(getString(R.string.distance_label, distance, ratio));
+                double distance = topGen.compareImage(topGen.getFeatureMat(), bottomGen.getFeatureMat());
+                distanceView.setText("Match: " + distance + "%");
                 break;
-        }
-    }
-
-    private void saveImage(Bitmap bmp, String fileName) {
-        String storagePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String savePath = storagePath + "/Download/OpenCV/";
-        File saveDir = new File(savePath);
-        if (!saveDir.exists()) { saveDir.mkdir(); }
-
-        String mDate = DateFormat.format("yyyyMMdd_kkmmss", System.currentTimeMillis()).toString();
-        String saveName = savePath + fileName + "_" + mDate + ".png";
-        try {
-            FileOutputStream fos = new FileOutputStream(saveName);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.flush();
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

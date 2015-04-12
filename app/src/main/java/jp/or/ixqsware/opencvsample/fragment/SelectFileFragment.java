@@ -99,6 +99,7 @@ public class SelectFileFragment extends Fragment implements View.OnClickListener
                     bottomHashView.setText(imageGen.getHash());
                     break;
             }
+            distanceView.setText("");
             if (topHashView.getText().length() > 0 && bottomHashView.getText().length() > 0) {
                 int distance = (new LevenshteinDistance()).calculateDistance(
                         topHashView.getText().toString(),
