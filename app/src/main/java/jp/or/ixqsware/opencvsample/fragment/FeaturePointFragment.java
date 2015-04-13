@@ -60,8 +60,8 @@ public class FeaturePointFragment extends Fragment implements OnClickListener {
         topFrame = (FrameLayout) rootView.findViewById(R.id.top_drawing_view);
         bottomFrame = (FrameLayout) rootView.findViewById(R.id.bottom_drawing_view);
 
-        Button topEraseButton = (Button) rootView.findViewById(R.id.top_erase_button);
-        Button bottomEraseButton = (Button) rootView.findViewById(R.id.bottom_erase_button);
+        ImageView topEraseButton = (ImageView) rootView.findViewById(R.id.top_erase_button);
+        ImageView bottomEraseButton = (ImageView) rootView.findViewById(R.id.bottom_erase_button);
         Button calculateButton = (Button) rootView.findViewById(R.id.calculate_button);
         topEraseButton.setOnClickListener(this);
         bottomEraseButton.setOnClickListener(this);
@@ -100,7 +100,7 @@ public class FeaturePointFragment extends Fragment implements OnClickListener {
                 }
 
                 ImageGen topGen = new ImageGen(arrTop, topFrame.getWidth(), topFrame.getHeight(), 0);
-                ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomDraw.getWidth(), 0);
+                ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomFrame.getHeight(), 0);
 
                 double distance = topGen.compareImage(topGen.getFeatureMat(), bottomGen.getFeatureMat());
                 distanceView.setText("Match: " + distance + "%");

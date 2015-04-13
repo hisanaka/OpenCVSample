@@ -65,8 +65,9 @@ public class ImageGen {
             }
         }
         mat = trimImage(mat, points);
+        this.originBmp = matToBitmap(mat);
+
         this.matFeature = getFeaturePoint(mat);
-        this.originBmp = matToBitmap(this.matFeature);
 
         mat = resizeImage(mat, 32, 32);
         Mat brightness = getBrightnessGraph(mat);
@@ -206,6 +207,7 @@ public class ImageGen {
         DMatch[] dMatches = matOfDMatch.toArray();
         int cnt = 0;
         for (int i = 0; i < dMatches.length; i++) {
+            Log.d("DEBUG:", "Distance:" + dMatches[i].distance);
             if (dMatches[i].distance < 50) {
                 cnt++;  // ここをどうするか・・・
             }

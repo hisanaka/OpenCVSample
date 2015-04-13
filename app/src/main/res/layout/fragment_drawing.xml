@@ -15,18 +15,19 @@
         android:background="@drawable/border"
         android:layout_weight="3">
 
-        <Button
+        <ImageView
             android:id="@+id/top_erase_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:text="X"/>
+            android:clickable="true"
+            android:src="@drawable/close"/>
 
         <FrameLayout
             android:id="@+id/top_drawing_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/top_erase_button"/>
 
     </RelativeLayout>
 
@@ -36,18 +37,19 @@
         android:background="@drawable/border"
         android:layout_weight="3">
 
-        <Button
+        <ImageView
             android:id="@+id/bottom_erase_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:text="X"/>
+            android:clickable="true"
+            android:src="@drawable/close"/>
 
         <FrameLayout
             android:id="@+id/bottom_drawing_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/bottom_erase_button"/>
 
     </RelativeLayout>
 

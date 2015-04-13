@@ -7,4 +7,5 @@
     <color name="translucent">#00000000</color>
     <color name="select_item">#ff449ae4</color>
 
+    <color name="action_bar">#eeeeee</color>
 </resources>

@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -58,8 +59,8 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
         topFrame = (FrameLayout) rootView.findViewById(R.id.top_drawing_view);
         bottomFrame = (FrameLayout) rootView.findViewById(R.id.bottom_drawing_view);
 
-        Button topEraseButton = (Button) rootView.findViewById(R.id.top_erase_button);
-        Button bottomEraseButton = (Button) rootView.findViewById(R.id.bottom_erase_button);
+        ImageView topEraseButton = (ImageView) rootView.findViewById(R.id.top_erase_button);
+        ImageView bottomEraseButton = (ImageView) rootView.findViewById(R.id.bottom_erase_button);
         Button calculateButton = (Button) rootView.findViewById(R.id.calculate_button);
         topEraseButton.setOnClickListener(this);
         bottomEraseButton.setOnClickListener(this);
