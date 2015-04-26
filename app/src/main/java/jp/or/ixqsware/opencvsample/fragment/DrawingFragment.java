@@ -2,39 +2,30 @@ package jp.or.ixqsware.opencvsample.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.graphics.Bitmap;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Environment;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import jp.or.ixqsware.opencvsample.ImageGen;
-import jp.or.ixqsware.opencvsample.LevenshteinDistance;
 import jp.or.ixqsware.opencvsample.MainActivity;
 import jp.or.ixqsware.opencvsample.R;
+import jp.or.ixqsware.opencvsample.db.RingDatabaseHelper;
 import jp.or.ixqsware.opencvsample.view.DrawingView;
 
 import static jp.or.ixqsware.opencvsample.Constants.ARG_SECTION_NUMBER;
 import static jp.or.ixqsware.opencvsample.Constants.DRAWING_SECTION_ID;
 
 public class DrawingFragment extends Fragment implements View.OnClickListener {
-    private FrameLayout topFrame;
-    private FrameLayout bottomFrame;
-    private TextView distanceView;
+    private FrameLayout drawingFrame;
+    private SQLiteDatabase db;
 
     public static DrawingFragment newInstance(int sectionNumber) {
         DrawingFragment fragment = new DrawingFragment();
@@ -56,23 +47,16 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_drawing, container, false);
 
-        topFrame = (FrameLayout) rootView.findViewById(R.id.top_drawing_view);
-        bottomFrame = (FrameLayout) rootView.findViewById(R.id.bottom_drawing_view);
+        drawingFrame = (FrameLayout) rootView.findViewById(R.id.drawing_view);
 
-        ImageView topEraseButton = (ImageView) rootView.findViewById(R.id.top_erase_button);
-        ImageView bottomEraseButton = (ImageView) rootView.findViewById(R.id.bottom_erase_button);
-        Button calculateButton = (Button) rootView.findViewById(R.id.calculate_button);
-        topEraseButton.setOnClickListener(this);
-        bottomEraseButton.setOnClickListener(this);
-        calculateButton.setOnClickListener(this);
+        Button registerButton = (Button) rootView.findViewById(R.id.register_button);
+        Button cancelButton = (Button) rootView.findViewById(R.id.cancel_button);
+        registerButton.setOnClickListener(this);
+        cancelButton.setOnClickListener(this);
 
-        distanceView = (TextView) rootView.findViewById(R.id.distance_view);
+        DrawingView drawingView = new DrawingView(getActivity());
 
-        DrawingView topDrawing = new DrawingView(getActivity());
-        DrawingView bottomDrawing = new DrawingView(getActivity());
-
-        topFrame.addView(topDrawing);
-        bottomFrame.addView(bottomDrawing);
+        drawingFrame.addView(drawingView);
 
         return rootView;
     }
@@ -80,60 +64,33 @@ public class DrawingFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        DrawingView topDraw = (DrawingView) topFrame.getChildAt(0);
-        DrawingView bottomDraw = (DrawingView) bottomFrame.getChildAt(0);
+        DrawingView drawingView = (DrawingView) drawingFrame.getChildAt(0);
 
         switch (id) {
-            case R.id.top_erase_button:
-                topDraw.clearCanvas();
+            case R.id.cancel_button:
+                drawingView.clearCanvas();
                 break;
-            case R.id.bottom_erase_button:
-                bottomDraw.clearCanvas();
+
+            case R.id.register_button:
+                ArrayList<Point> arrPoints = drawingView.getPoints();
+                if (arrPoints.size() == 0) { return; }
+
+                ImageGen imageGen = new ImageGen(arrPoints, drawingView.getWidth(), drawingView.getHeight());
+                StringBuilder sb = new StringBuilder();
+                for (Point p : arrPoints) {
+                    sb.append(p.x);
+                    sb.append(":");
+                    sb.append(p.y);
+                    sb.append(":");
+                }
+                String strPoints = sb.toString();
+                strPoints = strPoints.substring(0, strPoints.length() - 1);
+
+                RingDatabaseHelper helper = RingDatabaseHelper.getInstance(getActivity());
+                if (db == null || !db.isOpen()) db = helper.getReadableDatabase();
+                helper.registerGesture(db, imageGen.getHash(), strPoints);
+
                 break;
-            case R.id.calculate_button:
-                ArrayList<Point> arrTop = topDraw.getPoints();
-                ArrayList<Point> arrBottom = bottomDraw.getPoints();
-                if (arrTop.size() == 0 || arrBottom.size() == 0) { return; }
-
-                ImageGen topGen = new ImageGen(arrTop, topFrame.getWidth(), topFrame.getHeight());
-                ImageGen bottomGen = new ImageGen(arrBottom, bottomFrame.getWidth(), bottomDraw.getWidth());
-
-                String topHash = topGen.getHash();
-                String bottomHash = bottomGen.getHash();
-
-                /* TODO 明度グラフ保存(確認用)
-                Bitmap topBrightness = topGen.getBitmap();
-                saveImage(topBrightness, "top_brightness");
-                Bitmap bottomBrightness = bottomGen.getBitmap();
-                saveImage(bottomBrightness, "bottom_brightness");
-                */
-
-                distanceView.setText("");
-                LevenshteinDistance lDistance = new LevenshteinDistance();
-                int distance = lDistance.calculateDistance(topHash, bottomHash);
-                double ratio = (double) distance * 100 / (double) topHash.length();
-                distanceView.setText(getString(R.string.distance_label, distance, ratio));
-                break;
-        }
-    }
-
-    private void saveImage(Bitmap bmp, String fileName) {
-        String storagePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String savePath = storagePath + "/Download/OpenCV/";
-        File saveDir = new File(savePath);
-        if (!saveDir.exists()) { saveDir.mkdir(); }
-
-        String mDate = DateFormat.format("yyyyMMdd_kkmmss", System.currentTimeMillis()).toString();
-        String saveName = savePath + fileName + "_" + mDate + ".png";
-        try {
-            FileOutputStream fos = new FileOutputStream(saveName);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.flush();
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

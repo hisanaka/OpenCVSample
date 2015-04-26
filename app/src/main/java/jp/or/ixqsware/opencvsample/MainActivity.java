@@ -16,10 +16,9 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 
 import jp.or.ixqsware.opencvsample.fragment.DrawingFragment;
-import jp.or.ixqsware.opencvsample.fragment.FeaturePointFragment;
+import jp.or.ixqsware.opencvsample.fragment.ManagementFragment;
+import jp.or.ixqsware.opencvsample.fragment.MatchingFragment;
 import jp.or.ixqsware.opencvsample.fragment.NavigationDrawerFragment;
-import jp.or.ixqsware.opencvsample.fragment.RandomFragment;
-import jp.or.ixqsware.opencvsample.fragment.SelectFileFragment;
 
 import static jp.or.ixqsware.opencvsample.Constants.*;
 
@@ -68,15 +67,13 @@ public class MainActivity extends Activity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        arrFragments.add(RandomFragment.newInstance(RANDOM_SECTION_ID));
-        arrFragments.add(SelectFileFragment.newInstance(SELECT_FILE_SECTION_ID));
         arrFragments.add(DrawingFragment.newInstance(DRAWING_SECTION_ID));
-        arrFragments.add(FeaturePointFragment.newInstance(FEATURE_POINT_SECTION_ID));
+        arrFragments.add(MatchingFragment.newInstance(MATCHING_SECTION_ID));
+        arrFragments.add(ManagementFragment.newInstance(MANAGEMENT_SECTION_ID));
 
-        arrFragmentTags.add(getString(R.string.random_fragment_name));
-        arrFragmentTags.add(getString(R.string.select_file_fragment_name));
         arrFragmentTags.add(getString(R.string.drawing_fragment_name));
-        arrFragmentTags.add(getString(R.string.feature_point_fragment_name));
+        arrFragmentTags.add(getString(R.string.matching_fragment_name));
+        arrFragmentTags.add(getString(R.string.matching_fragment_name));
 
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.popBackStack();
@@ -122,9 +119,11 @@ public class MainActivity extends Activity
             case DRAWING_SECTION_ID:
                 mTitle = getString(R.string.drawing_fragment_name);
                 break;
-            case FEATURE_POINT_SECTION_ID:
-                mTitle = getString(R.string.feature_point_fragment_name);
+            case MANAGEMENT_SECTION_ID:
+                mTitle = getString(R.string.management_fragment_name);
                 break;
+            case MATCHING_SECTION_ID:
+                mTitle = getString(R.string.matching_fragment_name);
         }
     }
 }

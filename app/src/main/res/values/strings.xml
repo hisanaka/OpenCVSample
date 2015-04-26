@@ -9,6 +9,20 @@
     <string name="select_file_fragment_name">File Select</string>
     <string name="drawing_fragment_name">Drawing</string>
     <string name="feature_point_fragment_name">FeaturePoint</string>
+    <string name="matching_fragment_name">Matching</string>
+    <string name="management_fragment_name">Management</string>
+
+    <string name="progress_label" translatable="false">loading&#8230;</string>
+    <string name="gesture_id_key">gesture_id</string>
 
     <string name="distance_label">Distance: %1$d (%2$f %%)</string>
+
+    <string name="regist_label">Register</string>
+    <string name="cancel_label">Cancel</string>
+    <string name="matching_label">Check</string>
+
+    <string name="hold_sensor_label">Hold Touch Sensor until this message disappears.</string>
+    <string name="confirm_remove">Remove this gesture.\nAre you sure?</string>
+    <string name="yes_label">Yes</string>
+    <string name="no_label">No</string>
 </resources>
